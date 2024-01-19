@@ -3,9 +3,11 @@ package main
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 	"github.com/pelusa-v/pelusa-chat.git/internal/chat"
 )
 
@@ -20,7 +22,7 @@ func main() {
 		return c.Next()
 	})
 
-	app.Post("/register", websocket.New(registerHandler))
+	app.Get("/register/:name", websocket.New(registerHandler))
 	app.Get("/clients", showClientsHandler)
 	app.Get("/ws_test", websocket.New(wsTestHandler))
 	app.Listen(":3000")
@@ -28,6 +30,20 @@ func main() {
 
 func registerHandler(c *websocket.Conn) {
 	obs := c.Locals("observer").(*chat.Observer)
+
+	client := chat.NewClient(uuid.New().String(), c.Params("name"), obs, c)
+	client.Observer.SubscribeClientChan <- client
+
+	for {
+		_, msg, _ := client.WebsocketConn.ReadMessage()
+		// _, msg, err := c.ReadMessage()
+		genericResponse := []byte("Respuesta genérica a :" + string(msg))
+		client.WebsocketConn.WriteMessage(websocket.TextMessage, genericResponse)
+	}
+}
+
+func readWebSocketMessage() {
+
 }
 
 // func registerHandler(c *fiber.Ctx) error {
@@ -65,24 +81,41 @@ func showClientsHandler(c *fiber.Ctx) error {
 
 func wsTestHandler(c *websocket.Conn) {
 	var (
-		mt      int
-		msg     []byte
-		err     error
-		summary string
+		msg []byte
+		err error
 	)
 	for {
-		if mt, msg, err = c.ReadMessage(); err != nil {
+		if _, msg, err = c.ReadMessage(); err != nil {
 			log.Println("read: ", msg)
 		}
 
-		// summary = "Hereeeeee"
-		summary = fmt.Sprint(mt) + " / " + string(msg)
+		msg_str := string(msg)
 
-		// if err = c.WriteMessage(mt, msg); err != nil {
-		toSend := []byte(summary)
-		if err = c.WriteMessage(websocket.TextMessage, toSend); err != nil {
-			fmt.Println("write: ", err)
-			fmt.Println("write: ", toSend)
+		if strings.ToLower(msg_str) == "hola" {
+			toSend := []byte("Hola, ¿Cómo estás?")
+
+			if err = c.WriteMessage(websocket.TextMessage, toSend); err != nil {
+				fmt.Println("write: ", err)
+				fmt.Println("write: ", toSend)
+			}
+		}
+
+		if strings.ToLower(msg_str) == "¿cómo estás?" {
+			toSend := []byte("Muy bien, soy un bot tonto")
+
+			if err = c.WriteMessage(websocket.TextMessage, toSend); err != nil {
+				fmt.Println("write: ", err)
+				fmt.Println("write: ", toSend)
+			}
+		}
+
+		if strings.ToLower(msg_str) == "chau" {
+			toSend := []byte("Hasta pronto, espero haberte ayudado")
+
+			if err = c.WriteMessage(websocket.TextMessage, toSend); err != nil {
+				fmt.Println("write: ", err)
+				fmt.Println("write: ", toSend)
+			}
 		}
 	}
 }
