@@ -25,6 +25,7 @@ func main() {
 	app.Get("/register/:name", websocket.New(registerHandler))
 	app.Get("/clients", showClientsHandler)
 	app.Get("/ws_test", websocket.New(wsTestHandler))
+	app.Get("/we_broadcast", websocket.New(broacastHandler))
 	app.Listen(":3000")
 }
 
@@ -36,9 +37,29 @@ func registerHandler(c *websocket.Conn) {
 
 	for {
 		_, msg, _ := client.WebsocketConn.ReadMessage()
+		fmt.Println(msg)
 		// _, msg, err := c.ReadMessage()
-		genericResponse := []byte("Respuesta genérica a :" + string(msg))
-		client.WebsocketConn.WriteMessage(websocket.TextMessage, genericResponse)
+		// genericResponse := []byte("Respuesta genérica a :" + string(msg))
+		// client.WebsocketConn.WriteMessage(websocket.TextMessage, genericResponse)
+	}
+}
+
+func broacastHandler(c *websocket.Conn) {
+	defer c.Close()
+	obs := c.Locals("observer").(*chat.Observer)
+
+	for {
+		_, msg, err := c.ReadMessage()
+		if err != nil {
+			break
+		}
+
+		for _, client := range obs.Clients {
+			err := client.WebsocketConn.WriteMessage(websocket.TextMessage, msg)
+			if err != nil {
+				break
+			}
+		}
 	}
 }
 
