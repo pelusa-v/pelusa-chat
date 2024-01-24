@@ -22,12 +22,12 @@ func main() {
 		return c.Next()
 	})
 
-	app.Get("/ws/register/:name", websocket.New(registerHandler))
+	app.Get("/ws/register/:nick", websocket.New(registerHandler))
 	app.Get("/clients", showClientsHandler)
+	app.Get("/room/:nick", chatRoomHandler)
+	app.All("/register", registerRoomHandler)
 	// app.Get("/ws_test", websocket.New(wsTestHandler))
 	// app.Get("/we_broadcast", websocket.New(broacastHandler))
-	app.Get("/room", chatRoomHandler)
-	app.Get("/register", registerRoomHandler)
 	app.Listen(":3000")
 }
 
@@ -35,21 +35,23 @@ func registerRoomHandler(c *fiber.Ctx) error {
 
 	if c.Method() == fiber.MethodPost {
 		nickName := c.FormValue("nick")
-
-		return c.Redirect(fmt.Sprintf("/room", nickName))
+		return c.Redirect(fmt.Sprintf("/room/%s", nickName))
 	}
 
 	return c.Render("internal/views/register.html", nil)
 }
 
 func chatRoomHandler(c *fiber.Ctx) error {
-	return c.Render("internal/views/room.html", nil)
+	data := fiber.Map{
+		"nick": c.Params("nick"),
+	}
+	return c.Render("internal/views/room.html", data)
 }
 
 func registerHandler(c *websocket.Conn) {
 	obs := c.Locals("observer").(*chat.Observer)
 
-	client := chat.NewClient(uuid.New().String(), c.Params("name"), obs, c)
+	client := chat.NewClient(uuid.New().String(), c.Params("nick"), obs, c)
 	client.Observer.SubscribeClientChan <- client
 
 	for {

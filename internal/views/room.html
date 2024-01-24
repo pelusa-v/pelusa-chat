@@ -9,5 +9,9 @@
     Welcome to chat room!
 </body>
 
-<script></script>
+<script>
+    console.log("{{ .nick }}")
+    registerUrl = "ws://localhost:3000/ws/register/{{ .nick }}"
+    conn = new WebSocket(registerUrl);
+</script>
 </html>
