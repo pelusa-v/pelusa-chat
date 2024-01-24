@@ -1,17 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pelusa chat</title>
 </head>
 <body>
-    Welcome to chat room!
+    <div>Welcome to chat room!</div>
+
+    <button id="sendTest">Send test message!</button>
+
+    <div id="messages"></div>
 </body>
 
 <script>
     console.log("{{ .nick }}")
     registerUrl = "ws://localhost:3000/ws/register/{{ .nick }}"
     conn = new WebSocket(registerUrl);
+
+    $("#sendTest").click(
+        () => {
+            defaultTestMessage = "Hi, this is a test message!"
+            $("#messages").append("<p>" + defaultTestMessage + " ----------> Sent\n</p>")
+            conn.send(JSON.stringify(defaultTestMessage))
+        }
+    )
+
+    conn.onmessage = (msg) => {
+        console.log(msg)
+        $("#messages").append("<p>" +msg.data + " <--------- Received\n</p>")
+    }
 </script>
 </html>

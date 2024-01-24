@@ -54,12 +54,13 @@ func registerHandler(c *websocket.Conn) {
 	client := chat.NewClient(uuid.New().String(), c.Params("nick"), obs, c)
 	client.Observer.SubscribeClientChan <- client
 
+	// Why to use goroutines for separate execute read and write?
 	for {
 		_, msg, _ := client.WebsocketConn.ReadMessage()
 		fmt.Println(msg)
 		// _, msg, err := c.ReadMessage()
-		// genericResponse := []byte("Respuesta genérica a :" + string(msg))
-		// client.WebsocketConn.WriteMessage(websocket.TextMessage, genericResponse)
+		genericResponse := []byte("Respuesta genérica a :" + string(msg))
+		client.WebsocketConn.WriteMessage(websocket.TextMessage, genericResponse)
 	}
 }
 
