@@ -14,7 +14,7 @@ import (
 func main() {
 	app := fiber.New()
 
-	obs := chat.NewObserver()
+	obs := chat.NewChatObserver()
 	go obs.Start()
 
 	app.Use(func(c *fiber.Ctx) error {
@@ -49,7 +49,7 @@ func chatRoomHandler(c *fiber.Ctx) error {
 }
 
 func registerHandler(c *websocket.Conn) {
-	obs := c.Locals("observer").(*chat.Observer)
+	obs := c.Locals("observer").(*chat.ChatObserver)
 
 	client := chat.NewClient(uuid.New().String(), c.Params("nick"), obs, c)
 	client.Observer.SubscribeClientChan <- client
@@ -66,7 +66,7 @@ func registerHandler(c *websocket.Conn) {
 
 func broacastHandler(c *websocket.Conn) {
 	defer c.Close()
-	obs := c.Locals("observer").(*chat.Observer)
+	obs := c.Locals("observer").(*chat.ChatObserver)
 
 	for {
 		_, msg, err := c.ReadMessage()
@@ -111,7 +111,7 @@ func readWebSocketMessage() {
 // }
 
 func showClientsHandler(c *fiber.Ctx) error {
-	obs := c.Locals("observer").(*chat.Observer)
+	obs := c.Locals("observer").(*chat.ChatObserver)
 	var clients []chat.ClientJson
 	for _, client := range obs.Clients {
 		clients = append(clients, chat.ClientJson{Id: client.Id, Name: client.Name})

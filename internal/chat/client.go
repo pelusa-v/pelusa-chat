@@ -1,6 +1,10 @@
 package chat
 
-import "github.com/gofiber/contrib/websocket"
+import (
+	"fmt"
+
+	"github.com/gofiber/contrib/websocket"
+)
 
 type Message struct {
 	IdOrigin      string `json:"id_origin"`
@@ -13,13 +17,14 @@ type ClientJson struct {
 }
 
 type Client struct {
-	Id            string `json:"id"`
-	Name          string `json:"name"`
-	Observer      *Observer
+	Id            string
+	Name          string
+	Message       chan *Message
+	Observer      *ChatObserver
 	WebsocketConn *websocket.Conn
 }
 
-func NewClient(id string, name string, obs *Observer, conn *websocket.Conn) *Client {
+func NewClient(id string, name string, obs *ChatObserver, conn *websocket.Conn) *Client {
 	return &Client{
 		Id:            id,
 		Name:          name,
@@ -28,6 +33,18 @@ func NewClient(id string, name string, obs *Observer, conn *websocket.Conn) *Cli
 	}
 }
 
-func (c *Client) SendMessage() {
+func (c *Client) WriteMessage() {
+	for {
+		_, msg, _ := c.WebsocketConn.ReadMessage()
+		fmt.Println(msg)
+	}
+}
 
+func (c *Client) ReadMessage() {
+
+	genericResponse := []byte("")
+
+	for {
+		c.WebsocketConn.WriteMessage(websocket.TextMessage, genericResponse)
+	}
 }

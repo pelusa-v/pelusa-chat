@@ -1,20 +1,22 @@
 package chat
 
-type Observer struct {
+type ChatObserver struct {
 	Clients               []*Client
 	SubscribeClientChan   chan *Client
 	UnsubscribeClientChan chan *Client
+	Broadcast             chan *string
 }
 
-func NewObserver() *Observer {
-	return &Observer{
+func NewChatObserver() *ChatObserver {
+	return &ChatObserver{
 		Clients:               make([]*Client, 0),
 		SubscribeClientChan:   make(chan *Client),
 		UnsubscribeClientChan: make(chan *Client),
+		Broadcast:             make(chan *string),
 	}
 }
 
-func (o *Observer) Start() {
+func (o *ChatObserver) Start() {
 	for {
 		select {
 		case channel := <-o.SubscribeClientChan:
@@ -25,6 +27,8 @@ func (o *Observer) Start() {
 					o.Clients = append(o.Clients[:i], o.Clients[i+1:]...)
 				}
 			}
+			// case channel := <-o.Broadcast:
+
 		}
 	}
 }
