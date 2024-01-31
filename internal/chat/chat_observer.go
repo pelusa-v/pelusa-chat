@@ -1,5 +1,7 @@
 package chat
 
+import "fmt"
+
 type ChatObserver struct {
 	Clients               []*Client
 	SubscribeClientChan   chan *Client
@@ -33,6 +35,7 @@ func (o *ChatObserver) Start() {
 		case channel := <-o.SendMessageChan: // send message to destination client
 			for _, client := range o.Clients {
 				if client.Id == channel.IdDestination {
+					fmt.Println("Sending message to " + channel.IdDestination)
 					client.ReceiveMessageChan <- channel.Content
 				}
 			}

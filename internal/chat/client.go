@@ -9,7 +9,7 @@ import (
 type Message struct {
 	IdOrigin      string `json:"id_origin"`
 	IdDestination string `json:"id_destination"`
-	Content       string
+	Content       string `json:"content"`
 }
 
 type ClientJson struct {
@@ -35,17 +35,42 @@ func NewClient(id string, name string, obs *ChatObserver, conn *websocket.Conn) 
 }
 
 func (c *Client) ReadMessageFromClient() {
+
+	defer func() {
+		// c.Observer.Unregister <- c
+		_ = c.WebsocketConn.Close()
+	}()
+
 	for {
 		_, msg, _ := c.WebsocketConn.ReadMessage()
 		fmt.Println(msg)
+
+		// _, msg, _ := c.WebsocketConn.ReadMessage()
+		// chatMessage := Message{}
+		// json.Unmarshal(msg, &chatMessage)
+		// fmt.Println("MESSAGE RECEIVED!")
+		// fmt.Println(chatMessage.Content)
+		// fmt.Println(chatMessage.IdDestination)
+		// fmt.Println("---------------------")
+		// chatMessage.IdOrigin = c.Id
+		// c.Observer.SendMessageChan <- &chatMessage
 	}
 }
 
 func (c *Client) WriteMessageToClient() {
 
-	defer c.WebsocketConn.Close()
+	defer func() {
+		_ = c.WebsocketConn.Close()
+	}()
 
-	for messageReceived := range c.ReceiveMessageChan {
-		c.WebsocketConn.WriteMessage(websocket.TextMessage, []byte(messageReceived))
+	for {
+		select {
+		case messageReceived := <-c.ReceiveMessageChan:
+			c.WebsocketConn.WriteMessage(websocket.TextMessage, []byte(messageReceived))
+		}
 	}
+
+	// for messageReceived := range c.ReceiveMessageChan {
+	// 	c.WebsocketConn.WriteMessage(websocket.TextMessage, []byte(messageReceived))
+	// }
 }

@@ -9,6 +9,11 @@
 <body>
     <div>Welcome to chat room!</div>
 
+    <label for="message_content">Mensaje</label>
+    <input id="message_content" type="text">
+    <label for="destination">Destination</label>
+    <input id="destination" type="text">
+
     <button id="sendTest">Send test message!</button>
 
     <div id="messages"></div>
@@ -21,9 +26,15 @@
 
     $("#sendTest").click(
         () => {
-            defaultTestMessage = "Hi, this is a test message!"
-            $("#messages").append("<p>" + defaultTestMessage + " ----------> Sent\n</p>")
+            defaultTestMessage = {
+                "id_origin": null,
+                "id_destination": $("#destination").val(),
+                "content": $("#message_content").val(),
+            }
+            $("#messages").append("<p>" + defaultTestMessage.content + " ----------> Sent\n</p>")
             conn.send(JSON.stringify(defaultTestMessage))
+            console.log(defaultTestMessage)
+            console.log(JSON.stringify(defaultTestMessage))
         }
     )
 
