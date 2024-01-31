@@ -9,6 +9,7 @@ import (
 type Message struct {
 	IdOrigin      string `json:"id_origin"`
 	IdDestination string `json:"id_destination"`
+	Content       string
 }
 
 type ClientJson struct {
@@ -17,11 +18,11 @@ type ClientJson struct {
 }
 
 type Client struct {
-	Id            string
-	Name          string
-	Message       chan *Message
-	Observer      *ChatObserver
-	WebsocketConn *websocket.Conn
+	Id                 string
+	Name               string
+	Observer           *ChatObserver
+	WebsocketConn      *websocket.Conn
+	ReceiveMessageChan chan string
 }
 
 func NewClient(id string, name string, obs *ChatObserver, conn *websocket.Conn) *Client {
@@ -33,18 +34,18 @@ func NewClient(id string, name string, obs *ChatObserver, conn *websocket.Conn) 
 	}
 }
 
-func (c *Client) WriteMessage() {
+func (c *Client) ReadMessageFromClient() {
 	for {
 		_, msg, _ := c.WebsocketConn.ReadMessage()
 		fmt.Println(msg)
 	}
 }
 
-func (c *Client) ReadMessage() {
+func (c *Client) WriteMessageToClient() {
 
-	genericResponse := []byte("")
+	defer c.WebsocketConn.Close()
 
-	for {
-		c.WebsocketConn.WriteMessage(websocket.TextMessage, genericResponse)
+	for messageReceived := range c.ReceiveMessageChan {
+		c.WebsocketConn.WriteMessage(websocket.TextMessage, []byte(messageReceived))
 	}
 }

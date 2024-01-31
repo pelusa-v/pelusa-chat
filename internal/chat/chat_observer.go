@@ -4,7 +4,8 @@ type ChatObserver struct {
 	Clients               []*Client
 	SubscribeClientChan   chan *Client
 	UnsubscribeClientChan chan *Client
-	Broadcast             chan *string
+	BroadcastMessageChan  chan *string
+	SendMessageChan       chan *Message
 }
 
 func NewChatObserver() *ChatObserver {
@@ -12,7 +13,8 @@ func NewChatObserver() *ChatObserver {
 		Clients:               make([]*Client, 0),
 		SubscribeClientChan:   make(chan *Client),
 		UnsubscribeClientChan: make(chan *Client),
-		Broadcast:             make(chan *string),
+		BroadcastMessageChan:  make(chan *string),
+		SendMessageChan:       make(chan *Message),
 	}
 }
 
@@ -27,8 +29,13 @@ func (o *ChatObserver) Start() {
 					o.Clients = append(o.Clients[:i], o.Clients[i+1:]...)
 				}
 			}
-			// case channel := <-o.Broadcast:
-
+		// case channel := <-o.Broadcast:
+		case channel := <-o.SendMessageChan: // send message to destination client
+			for _, client := range o.Clients {
+				if client.Id == channel.IdDestination {
+					client.ReceiveMessageChan <- channel.Content
+				}
+			}
 		}
 	}
 }
