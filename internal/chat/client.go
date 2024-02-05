@@ -38,11 +38,16 @@ func (c *Client) ReadMessageFromClient() {
 
 	defer func() {
 		// c.Observer.Unregister <- c
+		c.Observer.UnsubscribeClientChan <- c
 		_ = c.WebsocketConn.Close()
 	}()
 
 	for {
-		_, msg, _ := c.WebsocketConn.ReadMessage()
+		_, msg, err := c.WebsocketConn.ReadMessage()
+		if err != nil {
+			fmt.Println(err)
+			break
+		}
 		fmt.Println(msg)
 
 		// _, msg, _ := c.WebsocketConn.ReadMessage()

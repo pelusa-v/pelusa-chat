@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"sync"
 
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
@@ -49,14 +50,31 @@ func chatRoomHandler(c *fiber.Ctx) error {
 }
 
 func registerHandler(c *websocket.Conn) {
+	// done := make(chan struct{})
+	// defer close(done)
+	// go Some(c)
+	// <-done
+
+	// done := make(chan struct{})
+	// defer close(done)
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+
 	obs := c.Locals("observer").(*chat.ChatObserver)
 
 	client := chat.NewClient(uuid.New().String(), c.Params("nick"), obs, c)
-	fmt.Println(client.Name)
 	client.Observer.SubscribeClientChan <- client
 
-	// Why to use goroutines for separate execute read and write?
+	fmt.Println("############ Users registered #############")
+	for _, c := range obs.Clients {
+		fmt.Println("- " + c.Name)
+	}
+
 	go client.ReadMessageFromClient()
+
+	wg.Wait()
+
 	// go client.WriteMessageToClient()
 	// for {
 	// 	_, msg, _ := client.WebsocketConn.ReadMessage()
@@ -65,6 +83,28 @@ func registerHandler(c *websocket.Conn) {
 	// 	genericResponse := []byte("Respuesta genérica a :" + string(msg))
 	// 	client.WebsocketConn.WriteMessage(websocket.TextMessage, genericResponse)
 	// }
+
+	// <-done
+}
+
+func Some(conn *websocket.Conn) {
+
+	for {
+		// Read messages from the WebSocket connection
+		_, msg, err := conn.ReadMessage()
+		if err != nil {
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				log.Printf("Error reading message: %v", err)
+			}
+			break
+		}
+
+		// Handle the received message
+		log.Println("Received message:", string(msg))
+
+		// Optionally, you can also write messages back to the client
+		// conn.WriteMessage(websocket.TextMessage, []byte("Message received"))
+	}
 }
 
 func broacastHandler(c *websocket.Conn) {
