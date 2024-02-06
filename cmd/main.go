@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
-	"sync"
+	"time"
 
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
@@ -58,8 +58,8 @@ func registerHandler(c *websocket.Conn) {
 	// done := make(chan struct{})
 	// defer close(done)
 
-	var wg sync.WaitGroup
-	wg.Add(1)
+	// var wg sync.WaitGroup
+	// wg.Add(1)
 
 	obs := c.Locals("observer").(*chat.ChatObserver)
 
@@ -73,7 +73,11 @@ func registerHandler(c *websocket.Conn) {
 
 	go client.ReadMessageFromClient()
 
-	wg.Wait()
+	// wg.Wait()
+
+	time.Sleep(10 * time.Second)
+
+	fmt.Println("Disconnect!!!!")
 
 	// go client.WriteMessageToClient()
 	// for {
