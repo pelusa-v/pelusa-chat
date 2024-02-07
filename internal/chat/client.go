@@ -1,6 +1,7 @@
 package chat
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/gofiber/contrib/websocket"
@@ -44,21 +45,20 @@ func (c *Client) ReadMessageFromClient() {
 
 	for {
 		_, msg, err := c.WebsocketConn.ReadMessage()
+
 		if err != nil {
 			fmt.Println(err)
 			break
 		}
-		fmt.Println(msg)
 
-		// _, msg, _ := c.WebsocketConn.ReadMessage()
-		// chatMessage := Message{}
-		// json.Unmarshal(msg, &chatMessage)
-		// fmt.Println("MESSAGE RECEIVED!")
-		// fmt.Println(chatMessage.Content)
-		// fmt.Println(chatMessage.IdDestination)
-		// fmt.Println("---------------------")
-		// chatMessage.IdOrigin = c.Id
-		// c.Observer.SendMessageChan <- &chatMessage
+		chatMessage := Message{}
+		json.Unmarshal(msg, &chatMessage)
+		fmt.Println("MESSAGE RECEIVED!")
+		fmt.Println(chatMessage.Content)
+		fmt.Println(chatMessage.IdDestination)
+		fmt.Println("---------------------")
+		chatMessage.IdOrigin = c.Id
+		c.Observer.SendMessageChan <- &chatMessage
 	}
 }
 
@@ -71,6 +71,8 @@ func (c *Client) WriteMessageToClient() {
 	for {
 		select {
 		case messageReceived := <-c.ReceiveMessageChan:
+			fmt.Println("SENDING TO CLIENT")
+			fmt.Println(messageReceived)
 			c.WebsocketConn.WriteMessage(websocket.TextMessage, []byte(messageReceived))
 		}
 	}
