@@ -28,10 +28,11 @@ type Client struct {
 
 func NewClient(id string, name string, obs *ChatObserver, conn *websocket.Conn) *Client {
 	return &Client{
-		Id:            id,
-		Name:          name,
-		Observer:      obs,
-		WebsocketConn: conn,
+		Id:                 id,
+		Name:               name,
+		Observer:           obs,
+		WebsocketConn:      conn,
+		ReceiveMessageChan: make(chan string), // TOO IMPORTANT (If there isn't an channel initialized, the message will never be received)
 	}
 }
 
@@ -63,6 +64,9 @@ func (c *Client) ReadMessageFromClient() {
 }
 
 func (c *Client) WriteMessageToClient() {
+
+	fmt.Println("Goroutine write message to client starts")
+	// c.WebsocketConn.WriteMessage(websocket.TextMessage, []byte("Este es un mensaje de prueba"))
 
 	defer func() {
 		_ = c.WebsocketConn.Close()

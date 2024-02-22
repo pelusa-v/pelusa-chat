@@ -36,6 +36,7 @@ func (o *ChatObserver) Start() {
 			for _, client := range o.Clients {
 				if client.Id == channel.IdDestination {
 					fmt.Println("Sending message to " + channel.IdDestination)
+					fmt.Println("Content " + channel.Content)
 					client.ReceiveMessageChan <- channel.Content
 				}
 			}

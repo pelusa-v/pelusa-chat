@@ -31,7 +31,7 @@ func ChatRoomHandler(c *fiber.Ctx) error {
 
 func RegisterHandler(c *websocket.Conn) {
 	var wg sync.WaitGroup
-	wg.Add(2)
+	wg.Add(4)
 
 	obs := c.Locals("observer").(*chat.ChatObserver)
 	client := chat.NewClient(uuid.New().String(), c.Params("nick"), obs, c)
