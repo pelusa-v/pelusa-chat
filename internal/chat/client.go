@@ -7,10 +7,22 @@ import (
 	"github.com/gofiber/contrib/websocket"
 )
 
+type WebSocketData struct {
+	Message      Message
+	Notification RegisteringNotification
+	IsMessage    bool
+}
+
 type Message struct {
 	IdOrigin      string `json:"id_origin"`
 	IdDestination string `json:"id_destination"`
 	Content       string `json:"content"`
+}
+
+type RegisteringNotification struct {
+	ClientId     string `json:"client_id"`
+	ClientName   string `json:"client_name"`
+	Registerting bool   `json:"registering"`
 }
 
 type ClientJson struct {
@@ -21,27 +33,36 @@ type ClientJson struct {
 type Client struct {
 	Id                 string
 	Name               string
-	Observer           *ChatObserver
+	Manager            *ChatManager
 	WebsocketConn      *websocket.Conn
-	ReceiveMessageChan chan string
+	ReceiveMessageChan chan *WebSocketData
 }
 
-func NewClient(id string, name string, obs *ChatObserver, conn *websocket.Conn) *Client {
+func NewClient(id string, name string, manager *ChatManager, conn *websocket.Conn) *Client {
 	return &Client{
 		Id:                 id,
 		Name:               name,
-		Observer:           obs,
+		Manager:            manager,
 		WebsocketConn:      conn,
-		ReceiveMessageChan: make(chan string), // TOO IMPORTANT (If there isn't an channel initialized, the message will never be received)
+		ReceiveMessageChan: make(chan *WebSocketData), // TOO IMPORTANT (If there isn't an channel initialized, the message will never be received)
 	}
 }
 
 func (c *Client) ReadMessageFromClient() {
 
 	defer func() {
-		// c.Observer.Unregister <- c
-		c.Observer.UnsubscribeClientChan <- c
+		c.Manager.UnsubscribeClientChan <- c
 		_ = c.WebsocketConn.Close()
+
+		var uregisterNotification = &WebSocketData{
+			Notification: RegisteringNotification{
+				ClientId:     c.Id,
+				ClientName:   c.Name,
+				Registerting: false,
+			},
+			IsMessage: false,
+		}
+		c.Manager.BroadcastNotificationChan <- uregisterNotification
 	}()
 
 	for {
@@ -52,21 +73,15 @@ func (c *Client) ReadMessageFromClient() {
 			break
 		}
 
-		chatMessage := Message{}
+		chatMessage := WebSocketData{}
 		json.Unmarshal(msg, &chatMessage)
-		fmt.Println("MESSAGE RECEIVED!")
-		fmt.Println(chatMessage.Content)
-		fmt.Println(chatMessage.IdDestination)
-		fmt.Println("---------------------")
-		chatMessage.IdOrigin = c.Id
-		c.Observer.SendMessageChan <- &chatMessage
+		chatMessage.Message.IdOrigin = c.Id
+		chatMessage.IsMessage = true
+		c.Manager.SendMessageChan <- &chatMessage
 	}
 }
 
 func (c *Client) WriteMessageToClient() {
-
-	fmt.Println("Goroutine write message to client starts")
-	// c.WebsocketConn.WriteMessage(websocket.TextMessage, []byte("Este es un mensaje de prueba"))
 
 	defer func() {
 		_ = c.WebsocketConn.Close()
@@ -75,13 +90,8 @@ func (c *Client) WriteMessageToClient() {
 	for {
 		select {
 		case messageReceived := <-c.ReceiveMessageChan:
-			fmt.Println("SENDING TO CLIENT")
-			fmt.Println(messageReceived)
-			c.WebsocketConn.WriteMessage(websocket.TextMessage, []byte(messageReceived))
+			data, _ := json.Marshal(messageReceived)
+			c.WebsocketConn.WriteMessage(websocket.TextMessage, data)
 		}
 	}
-
-	// for messageReceived := range c.ReceiveMessageChan {
-	// 	c.WebsocketConn.WriteMessage(websocket.TextMessage, []byte(messageReceived))
-	// }
 }
