@@ -32,7 +32,17 @@ func RegisterHandler(c *websocket.Conn) {
 	wg.Add(2)
 
 	client := chat.NewClient(uuid.New().String(), c.Params("nick"), &chat.Manager, c)
-	client.Observer.SubscribeClientChan <- client
+	client.Manager.SubscribeClientChan <- client
+
+	var registerNotification = &chat.WebSocketData{
+		Notification: chat.ClientNotification{
+			ClientId:   client.Id,
+			ClientName: client.Name,
+			// Content:    fmt.Sprintf("%s has enter to this chat room", client.Name),
+			Type: chat.RegisterNotification,
+		},
+	}
+	client.Manager.BroadcastNotificationChan <- registerNotification
 
 	go client.ReadMessageFromClient()
 	go client.WriteMessageToClient()
