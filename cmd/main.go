@@ -10,19 +10,13 @@ import (
 func main() {
 	app := fiber.New()
 
-	obs := chat.NewChatObserver()
-	go obs.Start()
-
-	app.Use(func(c *fiber.Ctx) error {
-		c.Locals("observer", obs)
-		return c.Next()
-	})
+	go chat.Manager.Start()
 
 	app.Get("/api/ws/register/:nick", websocket.New(handlers.RegisterHandler))
 	app.Get("/api/clients", handlers.ShowClientsHandler)
-	app.Get("/room/:nick", handlers.ChatRoomHandler)
-	app.All("/", handlers.RegisterRoomHandler)
-	// app.Get("/ws_test", websocket.New(wsTestHandler))
-	// app.Get("/we_broadcast", websocket.New(broacastHandler))
+
+	app.Get("/room/:nick", handlers.ChatRoomViewHandler)
+	app.All("/", handlers.RegisterRoomViewHandler)
+
 	app.Listen(":3000")
 }

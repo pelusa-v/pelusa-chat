@@ -21,12 +21,12 @@ type ClientJson struct {
 type Client struct {
 	Id                 string
 	Name               string
-	Observer           *ChatObserver
+	Observer           *ChatManager
 	WebsocketConn      *websocket.Conn
 	ReceiveMessageChan chan string
 }
 
-func NewClient(id string, name string, obs *ChatObserver, conn *websocket.Conn) *Client {
+func NewClient(id string, name string, obs *ChatManager, conn *websocket.Conn) *Client {
 	return &Client{
 		Id:                 id,
 		Name:               name,
