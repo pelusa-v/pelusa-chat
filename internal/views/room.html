@@ -29,7 +29,7 @@
             <div class="col-6">
                 <div class="list-group mt-4">
                     {{range .clients}}
-                    <button type="button" class="btn-sm list-group-item list-group-item-action">{{ .Name }}</button>
+                    <button type="button" class="btn-sm list-group-item list-group-item-action">{{.Id}}</button>
                     {{end}}
                     <button type="button" class="list-group-item list-group-item-action black" aria-current="true">
                       The current button
