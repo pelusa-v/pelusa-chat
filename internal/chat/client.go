@@ -9,7 +9,8 @@ import (
 
 type WebSocketData struct {
 	Message      Message
-	Notification ClientNotification
+	Notification RegisteringNotification
+	IsMessage    bool
 }
 
 type Message struct {
@@ -18,18 +19,10 @@ type Message struct {
 	Content       string `json:"content"`
 }
 
-type NotificationType string
-
-const (
-	RegisterNotification   NotificationType = "register"
-	UnregisterNotification NotificationType = "unregister"
-)
-
-type ClientNotification struct {
-	ClientId   string           `json:"client_id"`
-	ClientName string           `json:"client_name"`
-	Content    string           `json:"content"`
-	Type       NotificationType `json:"type"`
+type RegisteringNotification struct {
+	ClientId     string `json:"client_id"`
+	ClientName   string `json:"client_name"`
+	Registerting bool   `json:"registering"`
 }
 
 type ClientJson struct {
@@ -58,9 +51,18 @@ func NewClient(id string, name string, manager *ChatManager, conn *websocket.Con
 func (c *Client) ReadMessageFromClient() {
 
 	defer func() {
-		// c.Observer.Unregister <- c
 		c.Manager.UnsubscribeClientChan <- c
 		_ = c.WebsocketConn.Close()
+
+		var uregisterNotification = &WebSocketData{
+			Notification: RegisteringNotification{
+				ClientId:     c.Id,
+				ClientName:   c.Name,
+				Registerting: false,
+			},
+			IsMessage: false,
+		}
+		c.Manager.BroadcastNotificationChan <- uregisterNotification
 	}()
 
 	for {
@@ -73,18 +75,13 @@ func (c *Client) ReadMessageFromClient() {
 
 		chatMessage := WebSocketData{}
 		json.Unmarshal(msg, &chatMessage)
-		fmt.Println("MESSAGE RECEIVED!")
-		fmt.Println(chatMessage.Message.Content)
-		fmt.Println(chatMessage.Message.IdDestination)
-		fmt.Println("---------------------")
 		chatMessage.Message.IdOrigin = c.Id
+		chatMessage.IsMessage = true
 		c.Manager.SendMessageChan <- &chatMessage
 	}
 }
 
 func (c *Client) WriteMessageToClient() {
-
-	fmt.Println("Goroutine write message to client starts")
 
 	defer func() {
 		_ = c.WebsocketConn.Close()
@@ -93,8 +90,6 @@ func (c *Client) WriteMessageToClient() {
 	for {
 		select {
 		case messageReceived := <-c.ReceiveMessageChan:
-			fmt.Println("SENDING TO CLIENT")
-			fmt.Println(messageReceived)
 			data, _ := json.Marshal(messageReceived)
 			c.WebsocketConn.WriteMessage(websocket.TextMessage, data)
 		}

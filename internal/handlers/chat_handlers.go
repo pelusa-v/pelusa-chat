@@ -21,8 +21,15 @@ func RegisterRoomViewHandler(c *fiber.Ctx) error {
 }
 
 func ChatRoomViewHandler(c *fiber.Ctx) error {
+	data2 := struct {
+		Items []string
+	}{
+		Items: []string{"Apple", "Banana", "Orange"},
+	}
+
 	data := fiber.Map{
-		"nick": c.Params("nick"),
+		"nick":    c.Params("nick"),
+		"clients": data2,
 	}
 	return c.Render("internal/views/room.html", data)
 }
@@ -35,12 +42,13 @@ func RegisterHandler(c *websocket.Conn) {
 	client.Manager.SubscribeClientChan <- client
 
 	var registerNotification = &chat.WebSocketData{
-		Notification: chat.ClientNotification{
-			ClientId:   client.Id,
-			ClientName: client.Name,
+		Notification: chat.RegisteringNotification{
+			ClientId:     client.Id,
+			ClientName:   client.Name,
+			Registerting: true,
 			// Content:    fmt.Sprintf("%s has enter to this chat room", client.Name),
-			Type: chat.RegisterNotification,
 		},
+		IsMessage: false,
 	}
 	client.Manager.BroadcastNotificationChan <- registerNotification
 
