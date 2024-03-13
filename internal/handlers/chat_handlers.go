@@ -21,17 +21,8 @@ func RegisterRoomViewHandler(c *fiber.Ctx) error {
 }
 
 func ChatRoomViewHandler(c *fiber.Ctx) error {
-
-	var clients []chat.ClientJson
-	for _, client := range chat.Manager.Clients {
-		clients = append(clients, chat.ClientJson{Id: client.Id, Name: client.Name})
-		fmt.Println(client.Name)
-	}
-	fmt.Println("Hererer----")
-
 	data := fiber.Map{
-		"nick":    c.Params("nick"),
-		"clients": clients,
+		"nick": c.Params("nick"),
 	}
 	return c.Render("internal/views/room.html", data)
 }
