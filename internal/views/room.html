@@ -36,6 +36,7 @@
 <script>
     console.log("{{ .nick }}")
     registerUrl = "ws://localhost:3000/api/ws/register/{{ .nick }}"
+    // registerUrl = "ws://192.168.0.101:3000/api/ws/register/{{ .nick }}"
     conn = new WebSocket(registerUrl);
 
     $("#sendTest").click(
