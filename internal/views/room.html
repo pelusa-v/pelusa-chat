@@ -41,14 +41,11 @@
     $("#sendTest").click(
         () => {
             defaultTestMessage = {
-                "Message": {
-                    "id_origin": null,
-                    "id_destination": $("#destination").val(),
-                    "content": $("#message_content").val(),
-                },
-                "IsMessage": true,
+                "id_origin": null,
+                "id_destination": $("#destination").val(),
+                "content": $("#message_content").val(),
             }
-            $("#messages").append("<p style=\"color: blue;\">" + defaultTestMessage.Message.content + " ----------> Sent\n</p>")
+            $("#messages").append("<p style=\"color: blue;\">" + defaultTestMessage.content + " ----------> Sent (" + defaultTestMessage.id_destination + ")\n</p>")
             conn.send(JSON.stringify(defaultTestMessage))
             console.log(defaultTestMessage)
             console.log(JSON.stringify(defaultTestMessage))
@@ -59,14 +56,10 @@
         var websocketData = JSON.parse(msg.data)
         console.log(websocketData)
 
-        if (websocketData.IsMessage) {
-            $("#messages").append("<p style=\"color: red;\">" + websocketData.Message.content + " <--------- Received (" + websocketData.Message.id_origin + ")\n</p>")
+        if (websocketData.broadcast) {
+            $("#messages").append("<p style=\"color: grey;\">" + websocketData.content + "\n</p>")
         } else {
-            if (websocketData.Notification.registering) {
-                $("#messages").append("<p style=\"color: grey;\"> *** " + websocketData.Notification.client_name + " (" + websocketData.Notification.client_id + ") joined to this room ***\n</p>")
-            } else {
-                $("#messages").append("<p style=\"color: grey;\"> *** " + websocketData.Notification.client_name + " (" + websocketData.Notification.client_id + ") left this room ***\n</p>")
-            }
+            $("#messages").append("<p style=\"color: red;\">" + websocketData.content + " <--------- Received (" + websocketData.id_origin + ")\n</p>")
         }
     }
 </script>

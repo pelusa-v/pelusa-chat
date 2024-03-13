@@ -4,8 +4,8 @@ type ChatManager struct {
 	Clients                   []*Client
 	SubscribeClientChan       chan *Client
 	UnsubscribeClientChan     chan *Client
-	BroadcastNotificationChan chan *WebSocketData
-	SendMessageChan           chan *WebSocketData
+	BroadcastNotificationChan chan *Message
+	SendMessageChan           chan *Message
 }
 
 func (manager *ChatManager) Start() {
@@ -23,7 +23,7 @@ func (manager *ChatManager) Start() {
 
 		case channel := <-manager.SendMessageChan: // send message to destination client
 			for _, client := range manager.Clients {
-				if client.Id == channel.Message.IdDestination {
+				if client.Id == channel.IdDestination {
 					client.ReceiveMessageChan <- channel
 				}
 			}
@@ -40,6 +40,6 @@ var Manager = ChatManager{
 	Clients:                   make([]*Client, 0),
 	SubscribeClientChan:       make(chan *Client),
 	UnsubscribeClientChan:     make(chan *Client),
-	BroadcastNotificationChan: make(chan *WebSocketData),
-	SendMessageChan:           make(chan *WebSocketData),
+	BroadcastNotificationChan: make(chan *Message),
+	SendMessageChan:           make(chan *Message),
 }

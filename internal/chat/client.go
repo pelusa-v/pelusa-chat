@@ -7,22 +7,13 @@ import (
 	"github.com/gofiber/contrib/websocket"
 )
 
-type WebSocketData struct {
-	Message      Message
-	Notification RegisteringNotification
-	IsMessage    bool
-}
-
 type Message struct {
-	IdOrigin      string `json:"id_origin"`
-	IdDestination string `json:"id_destination"`
-	Content       string `json:"content"`
-}
-
-type RegisteringNotification struct {
-	ClientId     string `json:"client_id"`
-	ClientName   string `json:"client_name"`
-	Registerting bool   `json:"registering"`
+	IdOrigin        string `json:"id_origin"`
+	IdDestination   string `json:"id_destination"`
+	NameOrigin      string `json:"name_origin"`
+	NameDestination string `json:"name_destination"`
+	Content         string `json:"content"`
+	Broadcast       bool   `json:"broadcast"`
 }
 
 type ClientJson struct {
@@ -35,7 +26,7 @@ type Client struct {
 	Name               string
 	Manager            *ChatManager
 	WebsocketConn      *websocket.Conn
-	ReceiveMessageChan chan *WebSocketData
+	ReceiveMessageChan chan *Message
 }
 
 func NewClient(id string, name string, manager *ChatManager, conn *websocket.Conn) *Client {
@@ -44,7 +35,7 @@ func NewClient(id string, name string, manager *ChatManager, conn *websocket.Con
 		Name:               name,
 		Manager:            manager,
 		WebsocketConn:      conn,
-		ReceiveMessageChan: make(chan *WebSocketData), // TOO IMPORTANT (If there isn't an channel initialized, the message will never be received)
+		ReceiveMessageChan: make(chan *Message), // TOO IMPORTANT (If there isn't an channel initialized, the message will never be received)
 	}
 }
 
@@ -54,15 +45,14 @@ func (c *Client) ReadMessageFromClient() {
 		c.Manager.UnsubscribeClientChan <- c
 		_ = c.WebsocketConn.Close()
 
-		var uregisterNotification = &WebSocketData{
-			Notification: RegisteringNotification{
-				ClientId:     c.Id,
-				ClientName:   c.Name,
-				Registerting: false,
-			},
-			IsMessage: false,
+		var unregisterNotification = &Message{
+			IdOrigin:   "Manager",
+			NameOrigin: "Manager",
+			Content:    fmt.Sprintf("***  %s + ( + %s + ) left this room ***", c.Name, c.Id),
+			Broadcast:  true,
 		}
-		c.Manager.BroadcastNotificationChan <- uregisterNotification
+
+		c.Manager.BroadcastNotificationChan <- unregisterNotification
 	}()
 
 	for {
@@ -73,9 +63,10 @@ func (c *Client) ReadMessageFromClient() {
 			break
 		}
 
-		chatMessage := WebSocketData{}
+		chatMessage := Message{}
 		json.Unmarshal(msg, &chatMessage)
-		chatMessage.Message.IdOrigin = c.Id
+		chatMessage.IdOrigin = c.Id
+		chatMessage.Broadcast = false
 		fmt.Println(string(msg))
 		c.Manager.SendMessageChan <- &chatMessage
 	}
