@@ -76,7 +76,7 @@ func (c *Client) ReadMessageFromClient() {
 		chatMessage := WebSocketData{}
 		json.Unmarshal(msg, &chatMessage)
 		chatMessage.Message.IdOrigin = c.Id
-		chatMessage.IsMessage = true
+		fmt.Println(string(msg))
 		c.Manager.SendMessageChan <- &chatMessage
 	}
 }
