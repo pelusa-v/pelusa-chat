@@ -36,17 +36,16 @@
 <script>
     console.log("{{ .nick }}")
     registerUrl = "ws://localhost:3000/api/ws/register/{{ .nick }}"
-    // registerUrl = "ws://192.168.0.101:3000/api/ws/register/{{ .nick }}"
     conn = new WebSocket(registerUrl);
 
     $("#sendTest").click(
         () => {
             defaultTestMessage = {
-                "id_origin": null,
-                "id_destination": $("#destination").val(),
+                "origin_id": null,
+                "destination_id": $("#destination").val(),
                 "content": $("#message_content").val(),
             }
-            $("#messages").append("<p style=\"color: blue;\">" + defaultTestMessage.content + " ----------> Sent (" + defaultTestMessage.id_destination + ")\n</p>")
+            $("#messages").append("<p style=\"color: blue;\">" + defaultTestMessage.content + " ----------> Sent (" + defaultTestMessage.destination_id + ")\n</p>")
             conn.send(JSON.stringify(defaultTestMessage))
             console.log(defaultTestMessage)
             console.log(JSON.stringify(defaultTestMessage))
@@ -60,7 +59,7 @@
         if (websocketData.broadcast) {
             $("#messages").append("<p style=\"color: grey;\">" + websocketData.content + "\n</p>")
         } else {
-            $("#messages").append("<p style=\"color: red;\">" + websocketData.content + " <--------- Received (" + websocketData.id_origin + ")\n</p>")
+            $("#messages").append("<p style=\"color: red;\">" + websocketData.content + " <--------- Received (" + websocketData.origin_id + ")\n</p>")
         }
     }
 </script>

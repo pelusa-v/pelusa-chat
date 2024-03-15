@@ -18,12 +18,5 @@ func main() {
 	app.Get("/room/:nick", handlers.ChatRoomViewHandler)
 	app.All("/", handlers.RegisterRoomViewHandler)
 
-	app.Get("/api/sample", sampleHandler)
-
 	app.Listen("127.0.0.1:3000")
-	// app.Listen("192.168.0.101:3000")
-}
-
-func sampleHandler(c *fiber.Ctx) error {
-	return c.JSON("Hello")
 }

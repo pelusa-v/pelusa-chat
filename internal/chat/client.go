@@ -8,10 +8,10 @@ import (
 )
 
 type Message struct {
-	IdOrigin        string `json:"id_origin"`
-	IdDestination   string `json:"id_destination"`
-	NameOrigin      string `json:"name_origin"`
-	NameDestination string `json:"name_destination"`
+	OriginId        string `json:"origin_id"`
+	DestinationId   string `json:"destination_id"`
+	OriginName      string `json:"origin_name"`
+	DestinationName string `json:"destination_name"`
 	Content         string `json:"content"`
 	Broadcast       bool   `json:"broadcast"`
 }
@@ -46,8 +46,8 @@ func (c *Client) ReadMessageFromClient() {
 		_ = c.WebsocketConn.Close()
 
 		var unregisterNotification = &Message{
-			IdOrigin:   "Manager",
-			NameOrigin: "Manager",
+			OriginId:   "Manager",
+			OriginName: "Manager",
 			Content:    fmt.Sprintf("***  %s + ( + %s + ) left this room ***", c.Name, c.Id),
 			Broadcast:  true,
 		}
@@ -65,7 +65,7 @@ func (c *Client) ReadMessageFromClient() {
 
 		chatMessage := Message{}
 		json.Unmarshal(msg, &chatMessage)
-		chatMessage.IdOrigin = c.Id
+		chatMessage.OriginId = c.Id
 		chatMessage.Broadcast = false
 		fmt.Println(string(msg))
 		c.Manager.SendMessageChan <- &chatMessage

@@ -35,8 +35,8 @@ func RegisterHandler(c *websocket.Conn) {
 	client.Manager.SubscribeClientChan <- client
 
 	var registerNotification = &chat.Message{
-		IdOrigin:   "Manager",
-		NameOrigin: "Manager",
+		OriginId:   "Manager",
+		OriginName: "Manager",
 		Content:    fmt.Sprintf("***  %s (%s) joined to this room ***", client.Name, client.Id),
 		Broadcast:  true,
 	}

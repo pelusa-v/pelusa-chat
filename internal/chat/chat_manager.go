@@ -23,7 +23,7 @@ func (manager *ChatManager) Start() {
 
 		case channel := <-manager.SendMessageChan: // send message to destination client
 			for _, client := range manager.Clients {
-				if client.Id == channel.IdDestination {
+				if client.Id == channel.DestinationId {
 					client.ReceiveMessageChan <- channel
 				}
 			}
