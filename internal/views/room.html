@@ -44,6 +44,7 @@
                 "origin_id": null,
                 "destination_id": $("#destination").val(),
                 "content": $("#message_content").val(),
+                "broadcast": false,
             }
             $("#messages").append("<p style=\"color: blue;\">" + defaultTestMessage.content + " ----------> Sent (" + defaultTestMessage.destination_id + ")\n</p>")
             conn.send(JSON.stringify(defaultTestMessage))

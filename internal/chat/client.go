@@ -24,9 +24,9 @@ type ClientJson struct {
 type Client struct {
 	Id                 string
 	Name               string
-	Manager            *ChatManager
-	WebsocketConn      *websocket.Conn
-	ReceiveMessageChan chan *Message
+	Manager            *ChatManager    // Used to pass data through Manager channels or to perform Manager actions
+	WebsocketConn      *websocket.Conn // websocket connection used by client to communicate with server
+	ReceiveMessageChan chan *Message   // channel through which messages are received
 }
 
 func NewClient(id string, name string, manager *ChatManager, conn *websocket.Conn) *Client {
@@ -66,7 +66,6 @@ func (c *Client) ReadMessageFromClient() {
 		chatMessage := Message{}
 		json.Unmarshal(msg, &chatMessage)
 		chatMessage.OriginId = c.Id
-		chatMessage.Broadcast = false
 		fmt.Println(string(msg))
 		c.Manager.SendMessageChan <- &chatMessage
 	}
