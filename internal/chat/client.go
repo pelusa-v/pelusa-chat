@@ -39,7 +39,7 @@ func NewClient(id string, name string, manager *ChatManager, conn *websocket.Con
 	}
 }
 
-func (c *Client) ReadMessageFromClient() {
+func (c *Client) WriteMessages() {
 
 	defer func() {
 		c.Manager.UnsubscribeClientChan <- c
@@ -71,7 +71,7 @@ func (c *Client) ReadMessageFromClient() {
 	}
 }
 
-func (c *Client) WriteMessageToClient() {
+func (c *Client) ReadMessages() {
 
 	defer func() {
 		_ = c.WebsocketConn.Close()

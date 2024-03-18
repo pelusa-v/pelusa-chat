@@ -42,8 +42,8 @@ func RegisterHandler(c *websocket.Conn) {
 	}
 	client.Manager.BroadcastNotificationChan <- registerNotification
 
-	go client.ReadMessageFromClient()
-	go client.WriteMessageToClient()
+	go client.ReadMessages()
+	go client.WriteMessages()
 
 	wg.Wait()
 }
