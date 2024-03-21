@@ -48,7 +48,7 @@ func (c *Client) WriteMessages() {
 		var unregisterNotification = &Message{
 			OriginId:   "Manager",
 			OriginName: "Manager",
-			Content:    fmt.Sprintf("***  %s + ( + %s + ) left this room ***", c.Name, c.Id),
+			Content:    fmt.Sprintf("***  %s (%s) left this room ***", c.Name, c.Id),
 			Broadcast:  true,
 		}
 

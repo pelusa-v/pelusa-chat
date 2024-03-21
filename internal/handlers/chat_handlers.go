@@ -48,11 +48,11 @@ func RegisterHandler(c *websocket.Conn) {
 	wg.Wait()
 }
 
-func ShowClientsHandler(c *fiber.Ctx) error {
-	var clients []chat.ClientJson
-	for _, client := range chat.Manager.Clients {
-		clients = append(clients, chat.ClientJson{Id: client.Id, Name: client.Name})
-	}
+// func ShowClientsHandler(c *fiber.Ctx) error {
+// 	var clients []chat.ClientJson
+// 	for _, client := range chat.Manager.Clients {
+// 		clients = append(clients, chat.ClientJson{Id: client.Id, Name: client.Name})
+// 	}
 
-	return c.JSON(clients)
-}
+// 	return c.JSON(clients)
+// }

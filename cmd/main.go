@@ -13,7 +13,7 @@ func main() {
 	go chat.Manager.Start()
 
 	app.Get("/api/ws/register/:nick", websocket.New(handlers.RegisterHandler))
-	app.Get("/api/clients", handlers.ShowClientsHandler)
+	// app.Get("/api/clients", handlers.ShowClientsHandler)
 
 	app.Get("/room/:nick", handlers.ChatRoomViewHandler)
 	app.All("/", handlers.RegisterRoomViewHandler)
