@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"fmt"
-	"sync"
 
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
@@ -28,8 +27,7 @@ func ChatRoomViewHandler(c *fiber.Ctx) error {
 }
 
 func RegisterHandler(c *websocket.Conn) {
-	var wg sync.WaitGroup
-	wg.Add(2)
+	chat.Wg.Add(2)
 
 	client := chat.NewClient(uuid.New().String(), c.Params("nick"), &chat.Manager, c)
 	client.Manager.SubscribeClientChan <- client
@@ -45,7 +43,7 @@ func RegisterHandler(c *websocket.Conn) {
 	go client.ReadMessages()
 	go client.WriteMessages()
 
-	wg.Wait()
+	chat.Wg.Wait()
 }
 
 // func ShowClientsHandler(c *fiber.Ctx) error {

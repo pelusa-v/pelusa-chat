@@ -3,8 +3,13 @@ package chat
 import (
 	"encoding/json"
 	"fmt"
+	"sync"
 
 	"github.com/gofiber/contrib/websocket"
+)
+
+var (
+	Wg sync.WaitGroup
 )
 
 type Message struct {
@@ -42,6 +47,7 @@ func NewClient(id string, name string, manager *ChatManager, conn *websocket.Con
 func (c *Client) WriteMessages() {
 
 	defer func() {
+		Wg.Done()
 		c.Manager.UnsubscribeClientChan <- c
 		_ = c.WebsocketConn.Close()
 
@@ -74,6 +80,7 @@ func (c *Client) WriteMessages() {
 func (c *Client) ReadMessages() {
 
 	defer func() {
+		Wg.Done()
 		_ = c.WebsocketConn.Close()
 	}()
 
