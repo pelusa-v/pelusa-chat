@@ -8,3 +8,6 @@ Feel free to contribute and improve the code! :)
 ```
 go run cmd/main.go
 ```
+
+## Demo:
+![Example GIF](Demo.gif)
